@@ -3,6 +3,7 @@ package io.vertx.starter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.starter.database.WikiDatabaseVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -11,16 +12,17 @@ public class MainVerticle extends AbstractVerticle {
 
     Future<String> dbVerticleDeployment = Future.future();
     vertx.deployVerticle(new WikiDatabaseVerticle(), dbVerticleDeployment.completer());
-    dbVerticleDeployment.compose(id -> {
-      Future<String> httpVerticleDeployment = Future.future();
 
+    dbVerticleDeployment.compose(id -> {
+
+      Future<String> httpVerticleDeployment = Future.future();
       vertx.deployVerticle(
-        "io.vertx.starter.HttpServerVerticle",
+        "io.vertx.starter.http.HttpServerVerticle",
         new DeploymentOptions().setInstances(2),
-        httpVerticleDeployment.completer()
-      );
+        httpVerticleDeployment.completer());
 
       return httpVerticleDeployment;
+
     }).setHandler(ar -> {
       if (ar.succeeded()) {
         startFuture.complete();
@@ -28,7 +30,5 @@ public class MainVerticle extends AbstractVerticle {
         startFuture.fail(ar.cause());
       }
     });
-
   }
-
 }
